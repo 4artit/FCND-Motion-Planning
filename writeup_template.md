@@ -27,7 +27,9 @@ You're reading it! Below I describe how I addressed each rubric point and where 
 ### Explain the Starter Code
 
 #### 1. Explain the functionality of what's provided in `motion_planning.py` and `planning_utils.py`
-These scripts contain a basic planning implementation that includes...
+In `planning_utils.py`, contains a basic planning implementation that includes A* algorithm, heuristic and generating grid map function using map data.
+
+Compared with `backyard_flyer_solution.py`, `motion_planning.py` added new state which called **PLANNING**. And *path_plan* function which is activated in **PLANNING** state make waypoints for flying A(starting point) to B(destination).
 
 And here's a lovely image of my results (ok this image has nothing to do with it, but it's a nice example of how to include images in your writeup!)
 ![Top Down View](./misc/high_up.png)
