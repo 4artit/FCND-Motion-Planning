@@ -31,8 +31,8 @@ In `planning_utils.py`, contains a basic planning implementation that includes A
 
 Compared with `backyard_flyer_solution.py`, `motion_planning.py` added new state which called **PLANNING**. And *path_plan* function which is activated in **PLANNING** state make waypoints for flying A(starting point) to B(destination).
 
-And here's a lovely image of my results (ok this image has nothing to do with it, but it's a nice example of how to include images in your writeup!)
-![Top Down View](./misc/high_up.png)
+Here's a generated waypoints image of starter code of `motion_planning.py`
+![Top Down View](./misc/way_points.jpg)
 
 Here's | A | Snappy | Table
 --- | --- | --- | ---
