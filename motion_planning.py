@@ -1,5 +1,6 @@
 import argparse
 import time
+import copy
 import msgpack
 from enum import Enum, auto
 
@@ -114,15 +115,17 @@ class MotionPlanning(Drone):
     def plan_path(self):
         self.flight_state = States.PLANNING
         print("Searching for a path ...")
-        TARGET_ALTITUDE = 5
+        TARGET_ALTITUDE = 10
         SAFETY_DISTANCE = 5
+        GOAL_LAT = 37.797638
+        GOAL_LON = -122.394808
 
         self.target_position[2] = TARGET_ALTITUDE
 
         # TODO: read lat0, lon0 from colliders into floating point values
         data = np.loadtxt('colliders.csv', delimiter=',', dtype='U16', usecols = (0, 1))
-        lon0 = np.float64(data[0, 0].split(' ')[1])
-        lat0 = np.float64(data[0, 1].split(' ')[2])
+        lat0 = np.float64(data[0, 0].split(' ')[1])
+        lon0 = np.float64(data[0, 1].split(' ')[2])
         # TODO: set home position to (lon0, lat0, 0)
         self.set_home_position(lon0, lat0, 0)
         # TODO: retrieve current global position
@@ -138,12 +141,12 @@ class MotionPlanning(Drone):
         grid, north_offset, east_offset = create_grid(data, TARGET_ALTITUDE, SAFETY_DISTANCE)
         print("North offset = {0}, east offset = {1}".format(north_offset, east_offset))
         # Define starting point on the grid (this is just grid center)
-        grid_start = (-north_offset, -east_offset)
         # TODO: convert start position to current position rather than map center
-        
+        grid_start = (int(-north_offset + local_pos[0]), int(-east_offset + local_pos[1]))
         # Set goal as some arbitrary position on the grid
-        grid_goal = (-north_offset + 10, -east_offset + 10)
         # TODO: adapt to set goal as latitude / longitude position and convert
+        local_goal = global_to_local([GOAL_LON, GOAL_LAT, 0], self.global_home)
+        grid_goal = (int(-north_offset + local_goal[0]), int(-east_offset + local_goal[1]))
 
         # Run A* to find a path from start to goal
         # TODO: add diagonal motions with a cost of sqrt(2) to your A* implementation
@@ -152,7 +155,15 @@ class MotionPlanning(Drone):
         path, _ = a_star(grid, heuristic, grid_start, grid_goal)
         # TODO: prune path to minimize number of waypoints
         # TODO (if you're feeling ambitious): Try a different approach altogether!
-
+        pruned_path =  copy.deepcopy(path)
+        for i in range(1, len(path) - 1):
+            p1 = path[i-1]
+            p2 = path[i]
+            p3 = path[i+1]
+            det = p1[0]*(p2[1] - p3[1]) + p2[0]*(p3[1] - p1[1]) + p3[0]*(p1[1] - p2[1])
+            if det == 0:
+                pruned_path.remove(p2)
+        path = pruned_path
         # Convert path to waypoints
         waypoints = [[p[0] + north_offset, p[1] + east_offset, TARGET_ALTITUDE, 0] for p in path]
         # Set self.waypoints
